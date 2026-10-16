@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>笔记本 - NoteBook</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+<!-- 顶部标题栏 -->
+<header class="app-header">
+    <div class="logo">📒 NoteBook</div>
+    <div class="header-right">
+        <button id="btn-toggle-side" title="切换侧边栏">☰</button>
+        <button id="btn-refresh" title="从数据库重新加载当前笔记（丢弃未保存修改）">🔄 刷新</button>
+        <button id="btn-save" title="保存当前笔记">💾 保存</button>
+    </div>
+</header>
+
+<div class="app-body">
+    <!-- 左侧：笔记本（分类） + 页面（单篇笔记） -->
+    <aside id="sidebar" class="sidebar">
+        <div class="sidebar-section">
+            <div class="section-title">
+                <span>📚 笔记本（分类）</span>
+                <button id="btn-new-notebook" title="新建笔记本" class="icon-btn">+</button>
+            </div>
+            <ul id="notebook-list" class="notebook-list">
+            </ul>
+        </div>
+    </aside>
+
+    <!-- 右侧：笔记编辑区域 -->
+    <main class="main-area">
+        <!-- 工具栏 -->
+        <div id="toolbar" class="toolbar">
+            <!-- 模式切换 -->
+            <div class="tool-group">
+                <button id="btn-mode-edit" class="tool-btn active" title="编辑模式">✏️ 编辑</button>
+                <button id="btn-mode-preview" class="tool-btn" title="预览模式">👁 预览</button>
+            </div>
+
+            <span class="tool-sep"></span>
+
+            <!-- 文字格式 -->
+            <div class="tool-group">
+                <select id="select-heading" class="tool-select" title="标题级别">
+                    <option value="p">正文</option>
+                    <option value="h1">标题 1</option>
+                    <option value="h2">标题 2</option>
+                    <option value="h3">标题 3</option>
+                    <option value="h4">标题 4</option>
+                </select>
+                <select id="select-fontsize" class="tool-select" title="字号">
+                    <option value="1">10px</option>
+                    <option value="2">13px</option>
+                    <option value="3" selected>16px</option>
+                    <option value="4">18px</option>
+                    <option value="5">24px</option>
+                    <option value="6">32px</option>
+                    <option value="7">48px</option>
+                </select>
+            </div>
+
+            <span class="tool-sep"></span>
+
+            <div class="tool-group">
+                <button class="tool-btn" data-cmd="bold" title="加粗"><b>B</b></button>
+                <button class="tool-btn" data-cmd="italic" title="斜体"><i>I</i></button>
+                <button class="tool-btn" data-cmd="underline" title="下划线"><u>U</u></button>
+                <button class="tool-btn" data-cmd="strikeThrough" title="删除线"><s>S</s></button>
+            </div>
+
+            <span class="tool-sep"></span>
+
+            <div class="tool-group">
+                <input type="color" id="color-fore" class="tool-color" title="文字颜色">
+                <input type="color" id="color-back" class="tool-color" title="背景色">
+            </div>
+
+            <span class="tool-sep"></span>
+
+            <div class="tool-group">
+                <button class="tool-btn" data-cmd="justifyLeft" title="左对齐">⬅</button>
+                <button class="tool-btn" data-cmd="justifyCenter" title="居中">⬌</button>
+                <button class="tool-btn" data-cmd="justifyRight" title="右对齐">➡</button>
+                <button class="tool-btn" data-cmd="justifyFull" title="两端对齐">⇔</button>
+            </div>
+
+            <span class="tool-sep"></span>
+
+            <div class="tool-group">
+                <button class="tool-btn" data-cmd="insertUnorderedList" title="无序列表">•</button>
+                <button class="tool-btn" data-cmd="insertOrderedList" title="有序列表">1.</button>
+                <button class="tool-btn" data-cmd="indent" title="增加缩进">⇥</button>
+                <button class="tool-btn" data-cmd="outdent" title="减少缩进">⇤</button>
+            </div>
+
+            <span class="tool-sep"></span>
+
+            <div class="tool-group">
+                <button id="btn-insert-table" class="tool-btn" title="插入表格">▦ 表格</button>
+                <button id="btn-insert-image" class="tool-btn" title="插入图片">🖼 图片</button>
+                <button id="btn-insert-link" class="tool-btn" title="插入链接">🔗 链接</button>
+                <button class="tool-btn" data-cmd="horizontalRule" title="分割线">―</button>
+            </div>
+
+            <span class="tool-sep"></span>
+
+            <div class="tool-group">
+                <button class="tool-btn" data-cmd="undo" title="撤销">↶</button>
+                <button class="tool-btn" data-cmd="redo" title="重做">↷</button>
+                <button class="tool-btn" data-cmd="removeFormat" title="清除格式">✕</button>
+            </div>
+        </div>
+
+        <!-- 页面标题 -->
+        <div class="title-bar">
+            <input id="page-title" type="text" placeholder="未命名笔记">
+            <span id="save-status" class="save-status"></span>
+        </div>
+
+        <!-- 编辑区域 -->
+        <div id="editor-wrapper" class="editor-wrapper">
+            <!-- 编辑模式（contenteditable） -->
+            <div id="editor" class="editor" contenteditable="true" spellcheck="false">
+                <p><br></p>
+            </div>
+            <!-- 预览模式（只读） -->
+            <div id="preview" class="editor preview" style="display:none;">
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- 隐藏的图片上传 input -->
+<input type="file" id="file-image" accept="image/*" style="display:none;">
+
+<!-- Toast 提示 -->
+<div id="toast" class="toast"></div>
+
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
