@@ -3,6 +3,8 @@
 一款 **完全本地离线** 的轻量级笔记本桌面应用，对标 OneNote。  
 基于 **Python + Flask + PyWebView** 技术栈，零外部服务依赖，所有数据（笔记、图片）全部存储在你自己的电脑上。
 
+支持 **Windows** 和 **macOS**，两端代码一份，分别在各自平台上打包。
+
 ---
 
 ## ✨ 功能特性
@@ -10,7 +12,7 @@
 ### 📚 笔记管理
 - **笔记本（分类）** 功能：支持新建、重命名、删除，按笔记本分类管理所有页面
 - **页面（笔记）** 功能：每个笔记本下可创建任意多的笔记页面
-- **自动保存**：编辑 1.5 秒后自动保存，也支持 `Ctrl+S` 手动立即保存
+- **自动保存**：编辑 1.5 秒后自动保存，也支持 `Ctrl+S` / `Cmd+S` 手动立即保存
 - **实时状态**：右上角显示"保存中… / 已保存 / 保存失败"
 
 ### ✍️ 富文本编辑
@@ -48,27 +50,39 @@
 
 ## 🚀 快速启动
 
-### 方式 1：打包后的 EXE（推荐给普通用户）
-1. 把 `dist/NoteBook.exe`（及同级的 `notebook.db` / `uploads/`，如果有数据的话）放到任意非 "Program Files" 目录
-   - ❌ 不要放到任何名字包含 `Program Files` 的目录（不管 C/D 盘）—— Windows 会拒绝写入权限，导致无法保存
-   - ✅ 推荐路径：`D:\NoteBook\`、`E:\MyApps\NoteBook\` 等
-2. 双击 `NoteBook.exe` 启动（带自定义图标，无黑框）
-3. 可选：右键 exe → 发送到 → 桌面快捷方式；再右键快捷方式 → 属性 → 快捷键（如 `Ctrl+Alt+N`）
+### 方式 1：打包后的可执行文件（推荐给普通用户）
+
+#### Windows
+1. 拿到 `dist/windows/NoteBook.exe`（及同级的 `notebook.db` / `uploads/`，如果有数据的话）
+2. ❌ 不要放到任何名字包含 `Program Files` 的目录——Windows 会拒绝写入权限
+3. ✅ 推荐路径：`D:\NoteBook\`、`E:\MyApps\NoteBook\`
+4. 双击 `NoteBook.exe` 启动
+
+#### macOS
+1. 拿到 `dist/macos/NoteBook.app`（或 `.dmg`）
+2. 拖到"应用程序"文件夹（或 `~/Applications/`）
+3. 首次运行**右键 NoteBook.app → 打开**（macOS Gatekeeper 未签名 App 需要手动放行一次）
+4. 之后双击即可
 
 ### 方式 2：开发模式（需要 Python 环境）
+
 ```bash
 # 1. 进入项目目录
-cd e:\VsCode\NoteBook
+cd NoteBook
 
-# 2. 创建虚拟环境（首次）
-python -m venv venv
-.\venv\Scripts\activate        # Windows PowerShell
+# 2. 创建虚拟环境
+python3 -m venv venv          # macOS / Linux
+python -m venv venv           # Windows
 
-# 3. 安装依赖
+# 3. 激活虚拟环境
+source venv/bin/activate      # macOS / Linux
+.\venv\Scripts\activate       # Windows PowerShell
+
+# 4. 安装依赖
 pip install -r requirements.txt
 
-# 4. 启动（双击 start.bat 或手动运行）
-.\venv\Scripts\python.exe main.py
+# 5. 启动
+python main.py
 ```
 
 启动后 PyWebView 会自动打开一个桌面窗口，**不会启动系统浏览器**。
@@ -77,39 +91,72 @@ pip install -r requirements.txt
 
 ## ⌨️ 快捷键
 
-| 快捷键 | 功能 |
-|---|---|
-| `Ctrl+S` | 手动立即保存当前页面 |
-| `Ctrl+R` | 从数据库刷新当前页面（覆盖未保存修改） |
-| `Ctrl+Alt+N` | **全局快捷键**（需自行设置快捷方式），随时呼出 NoteBook |
+| 快捷键 | Windows | macOS | 功能 |
+|---|---|---|---|
+| 立即保存 | `Ctrl+S` | `Cmd+S` | 手动立即保存当前页面 |
+| 刷新页面 | `Ctrl+R` | `Cmd+R` | 从数据库刷新当前页面（覆盖未保存修改） |
+| 全局呼出 | `Ctrl+Alt+N` | ⌘+N（需自行设置） | 随时呼出 NoteBook |
 
 ---
 
-## 📦 打包成 EXE
+## 📦 平台打包（分开管理，互不覆盖）
 
-项目已自带 PyInstaller 打包配置（`build.spec`），一键打包：
+PyInstaller **不支持跨平台交叉编译**——Windows 上只能产出 `.exe`，macOS 上只能产出 `.app`。  
+打包产物统一放到 `dist/<platform>/` 目录下，两个平台完全隔离。
+
+### 🪟 Windows 打包
 
 ```bash
-cd e:\VsCode\NoteBook
-.\venv\Scripts\python.exe -m PyInstaller build.spec --noconfirm
+# 方式 A：双击 rebuild_windows.bat
+# 方式 B：命令行
+cd NoteBook
+.\venv\Scripts\python.exe rebuild_windows.py
 ```
 
-产物位置：`dist/NoteBook.exe`
+**产物**：`dist/windows/NoteBook.exe`（约 16 MB，单文件，无黑框）
 
-### 打包配置说明
-| 项 | 说明 |
-|---|---|
-| 单文件 | `onefile` 模式，15MB 左右，双击即用 |
-| 无黑框 | `console=False`，完全静默 |
-| 自定义图标 | `icon.ico`（渐变蓝色笔记本，多尺寸） |
-| 静态资源 | `static/` + `templates/` 内嵌到 exe |
-| 数据持久化 | `notebook.db` + `uploads/` 与 exe **同级**，方便用户备份 |
+脚本自动完成：
+1. 生成多尺寸 `icon.ico`（16/32/48/64/128/256）
+2. PyInstaller `--onefile --console=False` 打包
+3. 在桌面重建快捷方式（目标 exe 同级图标，快捷键 `Ctrl+Alt+N`）
+4. 广播 `WM_SETTINGCHANGE` 通知资源管理器刷新图标缓存
 
-### 重新生成图标（可选）
+### 🍎 macOS 打包
+
 ```bash
-.\venv\Scripts\python.exe -c "from make_icon import *; ..."
-# 或直接运行项目根目录的 make_icon.py（已自动删除，如需重新生成请再创建）
+# 方式 A：命令行
+cd NoteBook
+python3 rebuild_macos.py          # 只生成 .app
+python3 rebuild_macos.py --dmg    # 额外生成 .dmg
+
+# 方式 B：双击 rebuild_macos.sh（需 chmod +x rebuild_macos.sh 首次）
+./rebuild_macos.sh
+./rebuild_macos.sh --dmg
 ```
+
+**产物**：`dist/macos/NoteBook.app`（可选 `NoteBook.dmg`）
+
+脚本自动完成：
+1. 生成多尺寸 `icon.icns`（16/32/64/128/256/512）+ `icon_256.png`
+2. PyInstaller `--windowed` 打包为 `.app bundle`
+3. 清理 macOS 扩展属性（`com.apple.quarantine` 等）
+4. `--dmg` 时调用 `create-dmg`（需 `brew install create-dmg`）生成 DMG
+
+### 产物目录结构
+
+```
+dist/
+├── windows/
+│   ├── NoteBook.exe      # Windows 最终可执行文件（单文件）
+│   └── icon.ico          # 打包时用的图标（备份）
+│
+└── macos/
+    ├── NoteBook.app      # macOS 应用 bundle
+    ├── NoteBook.dmg      # 可选：DMG 分发包
+    └── icon.icns         # 打包时用的图标（备份）
+```
+
+两端**完全隔离**，不会互相覆盖。把 `dist/` 目录整体复制到另一台同平台机器上即可使用。
 
 ---
 
@@ -117,30 +164,33 @@ cd e:\VsCode\NoteBook
 
 ```
 NoteBook/
-├── main.py                 # 程序入口（启动 Flask + PyWebView）
-├── app.py                  # Flask 后端（路由 + API）
-├── db.py                   # SQLite 数据库操作
-├── config.py               # 配置（端口、路径、上传限制等）
-├── build.spec              # PyInstaller 打包配置
-├── icon.ico                # 应用图标（渐变蓝色笔记本）
-├── requirements.txt        # 依赖列表
-├── start.bat               # 双击启动脚本
-├── start_silent.vbs        # 完全静默启动（无黑框，用 pythonw）
-├── create_shortcut.ps1     # 一键生成桌面快捷方式 + 快捷键
-├── README.md               # 本文档
+├── main.py                     # 程序入口（启动 Flask + PyWebView，跨平台）
+├── app.py                      # Flask 后端（路由 + API）
+├── db.py                       # SQLite 数据库操作
+├── config.py                   # 配置（端口、路径、上传限制等）
+├── build_icons.py              # 共用图标生成（一源两形：.ico + .icns）
+├── rebuild_windows.py          # Windows 打包脚本（一键）
+├── rebuild_windows.bat         # Windows 打包入口（双击）
+├── rebuild_macos.py            # macOS 打包脚本（一键）
+├── rebuild_macos.sh            # macOS 打包入口
+├── icon.ico                    # Windows 图标（Pillow 生成，多尺寸）
+├── icon.icns                   # macOS 图标（Pillow 生成，多尺寸）
+├── icon_256.png                # 256×256 PNG（Mac 开发模式用）
+├── requirements.txt            # 依赖列表
 │
 ├── templates/
-│   └── index.html          # 主页面模板
+│   └── index.html              # 主页面模板
 │
 ├── static/
-│   ├── css/style.css       # 样式（含 Modal、表格菜单等）
-│   └── js/app.js           # 前端主脚本（状态管理、编辑器、API 调用）
+│   ├── css/style.css           # 样式
+│   └── js/app.js               # 前端主脚本
 │
-├── dist/                   # 打包产物目录
-│   └── NoteBook.exe        # 最终可执行文件
+├── dist/                       # 打包产物（跨平台分开）
+│   ├── windows/                # Windows 产物
+│   └── macos/                  # macOS 产物
 │
-├── notebook.db             # SQLite 数据库（首次运行自动创建）
-└── uploads/                # 图片存储目录（首次运行自动创建）
+├── notebook.db                 # SQLite 数据库（首次运行自动创建）
+└── uploads/                    # 图片存储目录（首次运行自动创建）
 ```
 
 ---
@@ -151,36 +201,34 @@ NoteBook/
 |---|---|---|
 | `FLASK_HOST` | `127.0.0.1` | Flask 监听地址（仅本机） |
 | `FLASK_PORT` | `5000` | Flask 监听端口 |
-| `IMAGE_STORAGE_MODE` | `filesystem` | 图片存储方式：`filesystem`（本地文件夹）或 `base64`（存入数据库） |
+| `IMAGE_STORAGE_MODE` | `filesystem` | 图片存储：`filesystem`（本地文件夹）或 `base64`（存数据库） |
 | `MAX_CONTENT_LENGTH` | `8MB` | 单张图片上传限制 |
 | `ALLOWED_IMAGE_EXTENSIONS` | `png/jpg/jpeg/gif/bmp/webp` | 允许的图片扩展名 |
 | `SECRET_KEY` | `notebook-offline-secret-key-change-me` | Flask Session 密钥 |
 
 ---
 
-## ⚠️ 注意事项
+## ⚠️ 各平台注意事项
 
-### 1. WebView2 Runtime（Windows 10 用户）
-- **Windows 11 自带** WebView2 Runtime，无需额外安装
-- **Windows 10** 如果没装，PyWebView 会 fallback 到 IE（mshtml），富文本编辑体验会变差
-- 建议手动安装：[Microsoft Edge WebView2 Runtime](https://developer.microsoft.com/microsoft-edge/webview2/)
+### 🪟 Windows
 
-### 2. 杀毒软件误报
-PyInstaller `onefile` 模式首次启动时，部分杀软（360、火绒等）可能误报为病毒。  
-**原因**：onefile 模式会把自身解压到临时目录执行，这是 PyInstaller 的标准行为。  
-**解决**：把 exe 加到杀软白名单即可。
+| 项目 | 说明 |
+|---|---|
+| **WebView2 Runtime** | Windows 11 自带；Windows 10 需手动装（缺 runtime 时 PyWebView 会 fallback 到 IE，富文本体验变差）→ [下载链接](https://developer.microsoft.com/microsoft-edge/webview2/) |
+| **杀毒误报** | PyInstaller onefile 首次解压可能被 360 / 火绒等误报。加白名单即可 |
+| **不要放到 "Program Files"** | 任何含该字样的目录都有权限限制（D 盘也一样）。推荐 `D:\NoteBook\` |
+| **图标缓存顽固** | 打包后桌面/任务栏如果还是旧图标：按 `Ctrl+Shift+Esc` → 重启"Windows 资源管理器" |
+| **数据备份** | 复制 `notebook.db` + `uploads/` 两个文件/目录即可 |
 
-### 3. 数据备份
-所有数据都与 exe 同级：
-- `notebook.db` — 笔记数据库
-- `uploads/` — 图片文件夹
+### 🍎 macOS
 
-**备份 = 复制这两个文件/目录**，非常简单。
-
-### 4. 不要放到 "Program Files"
-Windows 对任何名字含 `Program Files` 的目录都有特殊权限保护，普通用户无法写入。  
-即使在 D 盘也一样（`D:\Program Files\XXX` 同样有权限限制）。  
-**推荐路径**：`D:\NoteBook\`、`E:\MyApps\NoteBook\`。
+| 项目 | 说明 |
+|---|---|
+| **Gatekeeper 拦截** | 未签名 App 首次打开会被拦截。**右键 NoteBook.app → 打开** → 再点"打开"即可；或终端执行 `xattr -cr NoteBook.app` |
+| **签名 & 公证** | 如果分发给他人/上架 App Store，需要 Apple Developer ID（$99/年）+ 苹果公证流程。未签名 App 个人自用完全没问题 |
+| **PyWebView 后端** | 默认使用系统 WKWebView（Mac 8000+ 全系统支持，无需额外安装） |
+| **数据位置** | 默认与 `.app` bundle **同级**（例如把 NoteBook.app 放在 `~/MyApps/`，数据就在那里）。想遵循 macOS 规范可以改 `config.py` 让它存到 `~/Library/Application Support/NoteBook/` |
+| **DMG 制作** | 需先装 `brew install create-dmg`，打包时加 `--dmg` 参数 |
 
 ---
 
@@ -192,9 +240,9 @@ Windows 对任何名字含 `Program Files` 的目录都有特殊权限保护，�
 | 富文本编辑 | `contenteditable` + `document.execCommand` |
 | 后端 | Flask |
 | 数据库 | SQLite（单文件，零配置） |
-| 桌面容器 | PyWebView（edgechromium 后端，基于系统 WebView2） |
-| 打包 | PyInstaller（onefile 单文件模式） |
-| 图标生成 | Pillow |
+| 桌面容器 | PyWebView（Windows: edgechromium；macOS: cocoa + WKWebView） |
+| 打包 | PyInstaller（Windows: onefile；macOS: --windowed .app） |
+| 图标生成 | Pillow（自定义 ICO 结构拼接，绕开 Pillow ICO 的 append_images bug） |
 
 ---
 

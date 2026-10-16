@@ -1,18 +1,19 @@
 @echo off
 chcp 65001 >nul
 echo ================================================
-echo   NoteBook - 一键重新生成图标 + 打包 + 重建快捷方式
+echo   NoteBook - Windows 一键打包
+echo   产物: dist\windows\NoteBook.exe
 echo ================================================
 echo.
 cd /d "%~dp0"
+
 if not exist "venv\Scripts\python.exe" (
-    echo ❌ 未找到 venv\Scripts\python.exe，请先创建虚拟环境
+    echo ❌ 未找到 venv\Scripts\python.exe
     pause
     exit /b 1
 )
-echo 正在执行 rebuild.py ...
-echo.
-venv\Scripts\python.exe rebuild.py
+
+venv\Scripts\python.exe rebuild_windows.py
 if %errorlevel% neq 0 (
     echo.
     echo ❌ 执行出错
